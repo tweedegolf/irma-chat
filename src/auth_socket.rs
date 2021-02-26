@@ -102,6 +102,8 @@ async fn accept_auth_connection(stream: TcpStream) -> Result<(), Error> {
                 }
             },
             Some(status) = upstream.next() => {
+                info!("Received IRMA status update {}", status);
+
                 // forward server updates to the client
                 let action = SocketResponse::status(status.to_string());
                 auth_session.send(action).await?;
@@ -112,6 +114,7 @@ async fn accept_auth_connection(stream: TcpStream) -> Result<(), Error> {
                 }
 
                 if status == SessionStatus::Done {
+                    info!("Authentication session done, sending JWT");
                     finish_session(&irma_session, &mut auth_session).await?;
                     break;
                 }

@@ -62,8 +62,7 @@ async fn accept_chat_connection(
     let key = config::get("APP_JWT_KEY");
     let jwt = match decode::<SessionJwt>(key, token.to_string()) {
         Ok(jwt) => {
-            info!("Found jwt token: {:?}", &jwt);
-
+            info!("Found valid JWT token");
             jwt
         }
         Err(error) => {

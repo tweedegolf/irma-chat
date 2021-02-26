@@ -2,6 +2,7 @@ use crate::config;
 use crate::errors::Error;
 use crate::errors::Error::ParseError;
 use crate::irma::{Attribute, IrmaProofPayload, IrmaRequest, SessionResponse, SessionStatus};
+use futures_core::Stream;
 use futures_util::future::Ready;
 use futures_util::{self, future, StreamExt};
 use reqwest::header::CONTENT_TYPE;
@@ -60,9 +61,7 @@ impl IrmaSession {
     }
 
     // subscribe to SSE for session updates
-    pub async fn get_updates(
-        &self,
-    ) -> Result<impl futures_core::Stream<Item = SessionStatus>, Error> {
+    pub async fn get_updates(&self) -> Result<impl Stream<Item = SessionStatus>, Error> {
         let url = format!(
             "{}/session/{}/statusevents",
             config::get("IRMA_SERVER"),
@@ -74,9 +73,9 @@ impl IrmaSession {
 
         // parse SSE to an IRMA session status
         let filtered_stream = stream.filter_map(|event| -> Ready<Option<SessionStatus>> {
-            let status = IrmaSession::parse_sse(event);
-
-            future::ready(status.ok())
+            info!("Received SSE {:?}", event);
+            let status = IrmaSession::parse_sse(event).expect("parse error");
+            future::ready(Some(status))
         });
 
         Ok(filtered_stream)
@@ -93,12 +92,14 @@ impl IrmaSession {
         let mut parts = msg.splitn(2, ':');
 
         let value = match (parts.next(), parts.next()) {
-            (Some("data"), Some(value)) => value.trim().to_string(),
+            (Some("data"), Some(value)) => value.trim().trim_matches('"').to_string(),
+            (Some("event"), Some(_)) => {
+                // open events are translated to initial state
+                return Ok(SessionStatus::Initialized);
+            }
             _ => {
-                return Err(ParseError(format!(
-                    "Could not parse session status SSE '{}'",
-                    &msg
-                )))
+                error!("Could not parse session status SSE {}", &msg);
+                return Err(ParseError("Could not parse session status SSE".to_string()));
             }
         };
 
