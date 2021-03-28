@@ -13,33 +13,33 @@ You can try the DEMO at https://irma-chat.tweede.golf/ - make sure to have your 
 
 This project was made to better learn the [Rust](https://www.rust-lang.org/) programming language,
 to get some hands-on knowledge of IRMA and to learn the frontend framework [Svelte](https://svelte.dev/).
-Because learning a new frontend framework was one of the goal the [IRMA frontend packages](https://irma.app/docs/irma-frontend/) were not used.
-In any production application I would recommand using these packages.
+Because learning a new frontend framework was one of the goals the [IRMA frontend packages](https://irma.app/docs/irma-frontend/) were not used.
+In any production application I would recommend using these packages.
 
 ## Technical overview
 
-The application consist out of three components:
+The application consists of three components:
 
-- A frontend SPA, written in Typescript / Svelte that guides the user trough the authentication flow and shows the chat interface
-- A backend application written in Rust that only comminucates over websockets. There are two websocket endpoints, one for the authentication flow with IRMA and one to send and receive chat messages
+- A frontend SPA, written in Typescript / Svelte that guides the user through the authentication flow and shows the chat interface
+- A backend application written in Rust that only communicates over websockets. There are two websocket endpoints, one for the authentication flow with IRMA and one to send and receive chat messages
 - An [IRMA server](https://irma.app/docs/irma-server/) to perform IRMA sessions
 
-Session status updates are sent from IRMA server to the Rust backend over [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) and are forwarded to the client via the esteblished websocket.
+Session status updates are sent from IRMA server to the Rust backend over [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) and are forwarded to the client via the established websocket.
 
 ## Usage
 
 Deployment of this application is specific to the platform were you want to host the application.
 The DEMO application is hosted on a Kubernetes cluster.
 
-Running the applications consist of the following steps:
+Running the applications consists of the following steps:
 
 - Transpile the frontend using rollup and serve `index.html`, javascript files and stylesheets as static files
-- Compile the rust code and run the binary configures with environment variables
+- Compile the Rust code and run the binary configured with environment variables
 - Startup and configure the IRMA server
 
 ## Configuration
 
-The following environment variables a needed by the backend:
+The following environment variables are needed by the backend:
 
 ```
 WS_HOST: address and port to listen to for authentication sessions, for example: "0.0.0.0:9090"
@@ -79,6 +79,6 @@ openssl rsa -in app_jwtRS256.key -pubout -outform PEM -out app_jwtRS256.key.pub
 
 ## Tests
 
-The are functional tests for the main parts of this application.
-You can run them uzing `cargo test`. Make sure you have generated the
+There are functional tests for the main parts of this application.
+You can run them using `cargo test`. Make sure you have generated the
 JWT keys and configured all settings using the environment or a `.env` file.
